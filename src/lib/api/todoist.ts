@@ -24,7 +24,7 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
   }
 
   // Todoist goes through the Vite proxy to avoid CORS
-  const res = await fetch("/api/todoist/tasks?filter=today|overdue", {
+  const res = await fetch("/api/todoist/tasks", {
     headers: {
       Authorization: `Bearer ${todoistToken}`,
     },
