@@ -8,9 +8,9 @@ export interface JiraIssue {
 }
 
 const MOCK_ISSUES: JiraIssue[] = [
-  { key: "THDK8S-2939", summary: "Remove Google Captcha Probes", status: "In Progress", updated: "3/4/2026, 9:15:12 AM" },
-  { key: "THDK8S-2941", summary: "Investigate osquery for change validation", status: "In Progress", updated: "3/3/2026, 10:03:39 AM" },
-  { key: "THDK8S-2917", summary: "Build Monarch Run Cluster in Equinix", status: "In Progress", updated: "2/6/2026, 11:48:15 AM" },
+  { key: "PROJ-101", summary: "Update caching strategy for API gateway", status: "In Progress", updated: "3/4/2026, 9:15:12 AM" },
+  { key: "PROJ-98", summary: "Investigate flaky integration tests", status: "In Progress", updated: "3/3/2026, 10:03:39 AM" },
+  { key: "PROJ-85", summary: "Set up staging environment for new service", status: "In Progress", updated: "2/6/2026, 11:48:15 AM" },
 ];
 
 export async function fetchJiraInProgress(): Promise<JiraIssue[]> {

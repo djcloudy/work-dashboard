@@ -9,8 +9,8 @@ export interface GitHubPR {
 }
 
 const MOCK_PRS: GitHubPR[] = [
-  { title: "update blackbox exporter configmap to a Secret", repo: "one-thd/prometheus-operator", author: "BXR5130_thdgit", date: "3/2/2026, 10:34:17 AM", url: "#" },
-  { title: "adding recovery steps for when upgrade fails", repo: "one-thd/monarch-run-ansible-code", author: "BXR5130_thdgit", date: "2/5/2026, 1:40:13 PM", url: "#" },
+  { title: "Fix pagination bug in search results", repo: "acme-corp/web-app", author: "jdoe", date: "3/2/2026, 10:34:17 AM", url: "#" },
+  { title: "Add retry logic for failed API calls", repo: "acme-corp/backend-services", author: "asmith", date: "2/5/2026, 1:40:13 PM", url: "#" },
 ];
 
 export async function fetchGitHubReviewRequests(): Promise<GitHubPR[]> {
