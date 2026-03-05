@@ -22,19 +22,26 @@ export async function fetchJiraInProgress(): Promise<JiraIssue[]> {
   }
 
   const jql = encodeURIComponent('assignee = currentUser() AND status = "In Progress" ORDER BY updated DESC');
-  const url = `${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`;
-  console.log(`[Jira] Fetching ${url}`);
+  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const url = isDev
+    ? `/api/jira/search?jql=${jql}&fields=summary,status,updated`
+    : `${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`;
+
+  const headers: Record<string, string> = {
+    Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
+    "Content-Type": "application/json",
+  };
+  if (isDev) {
+    headers["x-proxy-target"] = jiraBaseUrl;
+  }
+
+  console.log(`[Jira] Fetching ${url} (isDev=${isDev})`);
 
   let res: Response;
   try {
-    res = await fetch(url, {
-      headers: {
-        Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
-        "Content-Type": "application/json",
-      },
-    });
+    res = await fetch(url, { headers });
   } catch (err) {
-    console.error("[Jira] Network error:", err);
+    console.error("[Jira] Network/CORS error:", err);
     throw new Error(`Jira network error: ${(err as Error).message}`);
   }
 

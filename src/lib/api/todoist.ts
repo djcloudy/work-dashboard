@@ -23,8 +23,10 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
     return MOCK_TASKS;
   }
 
-  const url = "https://api.todoist.com/rest/v2/tasks";
-  console.log(`[Todoist] Fetching ${url}`);
+  // Use Vite proxy in local dev, direct URL otherwise
+  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const url = isDev ? "/api/todoist/tasks" : "https://api.todoist.com/rest/v2/tasks";
+  console.log(`[Todoist] Fetching ${url} (isDev=${isDev})`);
 
   let res: Response;
   try {
@@ -32,7 +34,7 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
       headers: { Authorization: `Bearer ${todoistToken}` },
     });
   } catch (err) {
-    console.error("[Todoist] Network error:", err);
+    console.error("[Todoist] Network/CORS error:", err);
     throw new Error(`Todoist network error: ${(err as Error).message}`);
   }
 
