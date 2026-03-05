@@ -23,18 +23,29 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
     return MOCK_TASKS;
   }
 
-  const res = await fetch("https://api.todoist.com/rest/v2/tasks", {
-    headers: {
-      Authorization: `Bearer ${todoistToken}`,
-    },
-  });
+  const url = "https://api.todoist.com/rest/v2/tasks";
+  console.log(`[Todoist] Fetching ${url}`);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Bearer ${todoistToken}` },
+    });
+  } catch (err) {
+    console.error("[Todoist] Network error:", err);
+    throw new Error(`Todoist network error: ${(err as Error).message}`);
+  }
+
+  console.log(`[Todoist] Response: ${res.status} ${res.statusText}, content-type: ${res.headers.get("content-type")}`);
 
   if (!res.ok) {
-    console.error(`[Todoist] ${res.status} ${res.statusText}`);
-    throw new Error(`Todoist API error: ${res.status}`);
+    const body = await res.text();
+    console.error(`[Todoist] Error body:`, body);
+    throw new Error(`Todoist API error: ${res.status} ${res.statusText}`);
   }
 
   const data = await res.json();
+  console.log(`[Todoist] Received ${Array.isArray(data) ? data.length : "non-array"} tasks`);
 
   return (data ?? []).map((task: any) => ({
     id: task.id,
