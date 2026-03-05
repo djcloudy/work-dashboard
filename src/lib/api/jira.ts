@@ -22,20 +22,32 @@ export async function fetchJiraInProgress(): Promise<JiraIssue[]> {
   }
 
   const jql = encodeURIComponent('assignee = currentUser() AND status = "In Progress" ORDER BY updated DESC');
+  const url = `${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`;
+  console.log(`[Jira] Fetching ${url}`);
 
-  const res = await fetch(`${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`, {
-    headers: {
-      Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
-      "Content-Type": "application/json",
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: {
+        Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.error("[Jira] Network error:", err);
+    throw new Error(`Jira network error: ${(err as Error).message}`);
+  }
+
+  console.log(`[Jira] Response: ${res.status} ${res.statusText}, content-type: ${res.headers.get("content-type")}`);
 
   if (!res.ok) {
-    console.error(`[Jira] ${res.status} ${res.statusText}`);
-    throw new Error(`Jira API error: ${res.status}`);
+    const body = await res.text();
+    console.error(`[Jira] Error body:`, body);
+    throw new Error(`Jira API error: ${res.status} ${res.statusText}`);
   }
 
   const data = await res.json();
+  console.log(`[Jira] Received ${data.issues?.length ?? 0} issues`);
 
   return (data.issues ?? []).map((issue: any) => ({
     key: issue.key,
