@@ -15,37 +15,36 @@ const MOCK_ISSUES: JiraIssue[] = [
 
 export async function fetchJiraInProgress(): Promise<JiraIssue[]> {
   const { jiraBaseUrl, jiraEmail, jiraToken } = getSettings();
+  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-  if (!jiraBaseUrl || !jiraToken || !jiraEmail) {
-    console.warn("[Jira] Missing credentials — returning mock data");
+  if (!jiraBaseUrl || !jiraToken || !jiraEmail || !isDev) {
+    if (jiraBaseUrl && jiraToken && !isDev) {
+      console.warn("[Jira] API calls only work via Vite proxy (localhost). Showing mock data in preview.");
+    } else {
+      console.warn("[Jira] Missing credentials — returning mock data");
+    }
     return MOCK_ISSUES;
   }
 
   const jql = encodeURIComponent('assignee = currentUser() AND status = "In Progress" ORDER BY updated DESC');
-  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const url = isDev
-    ? `/api/jira/search?jql=${jql}&fields=summary,status,updated`
-    : `${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`;
-
-  const headers: Record<string, string> = {
-    Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
-    "Content-Type": "application/json",
-  };
-  if (isDev) {
-    headers["x-proxy-target"] = jiraBaseUrl;
-  }
-
-  console.log(`[Jira] Fetching ${url} (isDev=${isDev})`);
+  const url = `/api/jira/search?jql=${jql}&fields=summary,status,updated`;
+  console.log(`[Jira] Fetching via proxy: ${url}`);
 
   let res: Response;
   try {
-    res = await fetch(url, { headers });
+    res = await fetch(url, {
+      headers: {
+        Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
+        "Content-Type": "application/json",
+        "x-proxy-target": jiraBaseUrl,
+      },
+    });
   } catch (err) {
-    console.error("[Jira] Network/CORS error:", err);
+    console.error("[Jira] Network error:", err);
     throw new Error(`Jira network error: ${(err as Error).message}`);
   }
 
-  console.log(`[Jira] Response: ${res.status} ${res.statusText}, content-type: ${res.headers.get("content-type")}`);
+  console.log(`[Jira] Response: ${res.status} ${res.statusText}`);
 
   if (!res.ok) {
     const body = await res.text();

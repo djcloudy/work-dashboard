@@ -17,16 +17,19 @@ const MOCK_TASKS: TodoistTask[] = [
 
 export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
   const { todoistToken } = getSettings();
+  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-  if (!todoistToken) {
-    console.warn("[Todoist] Missing token — returning mock data");
+  if (!todoistToken || !isDev) {
+    if (todoistToken && !isDev) {
+      console.warn("[Todoist] API calls only work via Vite proxy (localhost). Showing mock data in preview.");
+    } else {
+      console.warn("[Todoist] Missing token — returning mock data");
+    }
     return MOCK_TASKS;
   }
 
-  // Use Vite proxy in local dev, direct URL otherwise
-  const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const url = isDev ? "/api/todoist/tasks" : "https://api.todoist.com/rest/v2/tasks";
-  console.log(`[Todoist] Fetching ${url} (isDev=${isDev})`);
+  const url = "/api/todoist/tasks";
+  console.log(`[Todoist] Fetching via proxy: ${url}`);
 
   let res: Response;
   try {
@@ -34,11 +37,11 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
       headers: { Authorization: `Bearer ${todoistToken}` },
     });
   } catch (err) {
-    console.error("[Todoist] Network/CORS error:", err);
+    console.error("[Todoist] Network error:", err);
     throw new Error(`Todoist network error: ${(err as Error).message}`);
   }
 
-  console.log(`[Todoist] Response: ${res.status} ${res.statusText}, content-type: ${res.headers.get("content-type")}`);
+  console.log(`[Todoist] Response: ${res.status} ${res.statusText}`);
 
   if (!res.ok) {
     const body = await res.text();
