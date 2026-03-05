@@ -23,11 +23,10 @@ export async function fetchJiraInProgress(): Promise<JiraIssue[]> {
 
   const jql = encodeURIComponent('assignee = currentUser() AND status = "In Progress" ORDER BY updated DESC');
 
-  const res = await fetch(`/api/jira/search?jql=${jql}&fields=summary,status,updated`, {
+  const res = await fetch(`${jiraBaseUrl}/rest/api/3/search?jql=${jql}&fields=summary,status,updated`, {
     headers: {
       Authorization: `Basic ${btoa(`${jiraEmail}:${jiraToken}`)}`,
       "Content-Type": "application/json",
-      "x-proxy-target": jiraBaseUrl,
     },
   });
 

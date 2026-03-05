@@ -23,8 +23,7 @@ export async function fetchTodoistTasks(): Promise<TodoistTask[]> {
     return MOCK_TASKS;
   }
 
-  // Todoist goes through the Vite proxy to avoid CORS
-  const res = await fetch("/api/todoist/tasks", {
+  const res = await fetch("https://api.todoist.com/rest/v2/tasks", {
     headers: {
       Authorization: `Bearer ${todoistToken}`,
     },
